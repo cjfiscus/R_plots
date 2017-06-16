@@ -1,0 +1,50 @@
+---
+title: "Maps"
+author: "Christopher J. Fiscus"
+date: "6/16/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## How to plot coordinates on a map using ggmap 
+
+```{r readdata, echo=TRUE}
+## read in data
+locs<-read.delim("locs.txt", header=T)
+
+## Format of data (Name, lat, long)
+locs[6:9,]
+```
+
+```{r libs, echo=TRUE, warnings=FALSE}
+## install library if not already installed, load library
+
+need<-c("ggmap") # required packages
+ins<-installed.packages()[,1] #find out which packages are installed
+(Get<-need[which(is.na(match(need,ins)))]) # check if installed 
+if(length(Get)>0){install.packages(Get)} #install if not installed previously
+eval(parse(text=paste("library(",need,")")))#load the required packages
+
+```
+
+```{r getmap, echo=TRUE, warnings=FALSE}
+## ggmap requires that maps be downloaded from the internet prior to use.  See vignette for more info
+
+## Download a watercolor map centered on Eurasia from stamen, zoom at continental level 
+myMap<-get_map(location=c(-20,0,150, 60), source="stamen", maptype="watercolor", zoom=3)
+
+## coordinates are left, bottom, right, top
+```
+
+```{r plot_map, echo=TRUE, warnings=F}
+## Define map using ggplot syntax 
+p<- ggmap(myMap) + geom_point(aes(x = long, y = lat), data = locs[6:9,],
+           alpha = .8, color="black", size = 3)
+
+## plot map 
+print(p)
+```
+
