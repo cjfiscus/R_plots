@@ -1,0 +1,122 @@
+---
+title: "Principal Component Analysis"
+author: "Christopher J. Fiscus"
+date: "10/24/2017"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## What is Principal Component Analysis (PCA)?
+PCA a clustering method to reduce dimensionality in datasets and to explore patterns in data. The details of how this works can be found elsewhere.  
+
+
+## Let's use the iris dataset
+This dataset includes sepal length, sepal width, petal length, and petal width for 150 iris plants from three different species. 
+
+```{r readdata, echo=TRUE}
+## read in data
+library(datasets)
+df = iris
+
+## Format of data (Name, lat, long)
+head(df)
+```
+
+## Transform data
+When doing PCA it is a good idea to transform the data so it is normalized. It's common to use a log transformation to do this. 
+
+```{r transform, echo=TRUE, warnings=FALSE}
+## log transformation on numerical data  
+normalized<-log(iris[,1:4])
+species<-iris[,5]
+
+```
+
+## Do PCA 
+```{r pca, echo=TRUE, warnings=F}
+## pca using single value decomposition, centered and scaled
+df.pca<-prcomp(normalized, scale.=TRUE, center=TRUE)
+
+```
+
+## Plot the Percent Variance Explained by each PCA 
+1. Format the data 
+```{r pve, echo=TRUE, warnings=F}
+## calculate percent variance
+per.var<- (df.pca$sdev^2/sum(df.pca$sdev^2))*100
+per.var<-as.data.frame(per.var)
+
+## format data nicely 
+per.var<-cbind(1:nrow(per.var), per.var)
+colnames(per.var)<-c("PC", "PercentVariance")
+
+```
+2. plot with ggplot2 
+```{r plot_pervar, echo=TRUE, warnings=F}
+library(ggplot2)
+g<-ggplot(data=per.var, aes(x=factor(PC), y=PercentVariance, axis.ticks=1)) + geom_bar(stat="identity") + xlab("principal component") + ylab("% Variance") + theme(text=element_text(size=14)) + ggtitle("Variance Explained by PCs")
+print(g)
+# write graph out 
+# ggsave("varexplained.png", plot=g)
+
+```
+
+## Plot PCs 1-3 
+1. Plot PC 1 vs. PC 2
+Note: The github version of ggfortify will add the % variance explained to the axis. The CRAN version does not have this yet. 
+```{r plot_pca, echo=TRUE, warnings=F}
+library(factoextra)
+
+## install github version of ggfortify 
+#library(devtools)
+#install_github('sinhrks/ggfortify')
+
+library(ggfortify) # load lib
+
+## Plot PC1 vs. PC2
+g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE)
+print(g)
+```
+2. Plot PC2 vs. PC 3
+```{r plot_pca2, echo=TRUE, warnings=F}
+## Plot PC2 vs. PC3
+g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE, x=2, y=3)
+print(g)
+```
+
+## Explore loadings
+```{r loadings, echo=TRUE, warnings=F}
+## Loadings for PCs 1-3
+Loadings<-as.data.frame(df.pca$rotation[,1:3])
+head(Loadings)
+```
+
+## Plot Densities of PCs 1 & 2 
+```{r density, echo=TRUE, warnings=F}
+## Density of PC1 Loadings plotted with base
+d<-density(Loadings$PC1)
+plot(d)
+
+## Density of PC2 Loadings plotted with base
+d2<-density(Loadings$PC2)
+plot(d2)
+```
+
+## Explore PCA
+```{r contrib, echo=TRUE, warnings=F}
+res.ind <- get_pca_ind(df.pca)
+
+## coordinates
+coord<-as.data.frame(res.ind$coord)
+head(coord)
+
+## contributions 
+contri<-as.data.frame(res.ind$contrib)
+head(contri)
+
+## quality
+qual<-as.data.frame(res.ind$cos2)
+head(qual)
+```
