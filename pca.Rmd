@@ -1,7 +1,7 @@
 ---
 title: "Principal Component Analysis"
 author: "Christopher J. Fiscus"
-date: "10/24/2017"
+date: "updated 1/22/2018"
 output: pdf_document
 ---
 
@@ -56,7 +56,7 @@ colnames(per.var)<-c("PC", "PercentVariance")
 2. plot with ggplot2 
 ```{r plot_pervar, echo=TRUE, warnings=F}
 library(ggplot2)
-g<-ggplot(data=per.var, aes(x=factor(PC), y=PercentVariance, axis.ticks=1)) + geom_bar(stat="identity") + xlab("principal component") + ylab("% Variance") + theme(text=element_text(size=14)) + ggtitle("Variance Explained by PCs")
+g<-ggplot(data=per.var, aes(x=factor(PC), y=PercentVariance, axis.ticks=1)) + geom_bar(stat="identity") + xlab("principal component") + ylab("% Variance") + theme(text=element_text(size=14)) + ggtitle("Variance Explained by PCs") + theme_classic()
 print(g)
 # write graph out 
 # ggsave("varexplained.png", plot=g)
@@ -76,13 +76,13 @@ library(factoextra)
 library(ggfortify) # load lib
 
 ## Plot PC1 vs. PC2
-g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE)
+g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE, scale=0) + theme_classic()
 print(g)
 ```
 2. Plot PC2 vs. PC 3
 ```{r plot_pca2, echo=TRUE, warnings=F}
 ## Plot PC2 vs. PC3
-g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE, x=2, y=3)
+g<-autoplot(df.pca, data=df, colour='Species', alpha=0.5, variance_percentage=TRUE, loadings=FALSE, x=2, y=3, scale=0) + theme_classic()
 print(g)
 ```
 
@@ -93,15 +93,10 @@ Loadings<-as.data.frame(df.pca$rotation[,1:3])
 head(Loadings)
 ```
 
-## Plot Densities of PCs 1 & 2 
+## Plot Densities of PCs 1 - 3 
 ```{r density, echo=TRUE, warnings=F}
-## Density of PC1 Loadings plotted with base
-d<-density(Loadings$PC1)
-plot(d)
-
-## Density of PC2 Loadings plotted with base
-d2<-density(Loadings$PC2)
-plot(d2)
+g<-ggplot(Loadings) + geom_density(aes(PC1, color="black")) + theme_classic() + geom_density(aes(PC2, color="red")) + geom_density(aes(PC3, color="blue")) + xlab("Contribution to PC") + theme(text=element_text(size=16)) + scale_color_manual(labels=c("1", "2", "3"), values=c("black", "red", "blue")) + labs(colour="PC")
+print(g)
 ```
 
 ## Explore PCA
