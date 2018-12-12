@@ -1,8 +1,10 @@
 ---
-title: "Maps"
-author: "Christopher J. Fiscus"
-date: "6/16/2017"
-output: html_document
+title: "How to Draw Maps"
+author: '@cjfiscus'
+date: "12/12/2018"
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -13,38 +15,38 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r readdata, echo=TRUE}
 ## read in data
-locs<-read.delim("locs.txt", header=T)
+locs<-read.delim("data/coords.txt", header=T)
 
-## Format of data (Name, lat, long)
-locs[6:9,]
+## check formatting 
+head(locs)
 ```
 
 ```{r libs, echo=TRUE, warnings=FALSE}
-## install library if not already installed, load library
-
-need<-c("ggmap") # required packages
-ins<-installed.packages()[,1] #find out which packages are installed
-(Get<-need[which(is.na(match(need,ins)))]) # check if installed 
-if(length(Get)>0){install.packages(Get)} #install if not installed previously
-eval(parse(text=paste("library(",need,")")))#load the required packages
+## install libraries if not already installed, load libraries
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(ggplot2, ggmap, maps, mapdata)
 
 ```
 
 ```{r getmap, echo=TRUE, warnings=FALSE}
-## ggmap requires that maps be downloaded from the internet prior to use.  See vignette for more info
-
-## Download a watercolor map centered on Eurasia from stamen, zoom at continental level 
-myMap<-get_map(location=c(-20,0,150, 60), source="stamen", maptype="watercolor", zoom=3)
-
-## coordinates are left, bottom, right, top
+# set map, check out ?map_data for more options 
+map<-map_data("world")
 ```
 
 ```{r plot_map, echo=TRUE, warnings=F}
 ## Define map using ggplot syntax 
-p<- ggmap(myMap) + geom_point(aes(x = long, y = lat), data = locs[6:9,],
-           alpha = .8, color="black", size = 3)
+g<-ggplot() + 
+  # draw map shape (can make outline any color by changing color)
+  geom_polygon(data=map, aes(x=long, y=lat, group=group), fill=NA, color="grey27") + 
+  
+  # add points to map 
+  geom_point(data=locs, aes(x=longitude, y=latitude), color="blue", size=1) + 
+  # set view boundaries (x is longitude, y is latitude)
+  coord_fixed(xlim=c(-130, 100), ylim=c(-30, 70),ratio=1.3) +
+  # remove that ugly grey background 
+  theme_classic()
 
 ## plot map 
-print(p)
+print(g)
 ```
 
